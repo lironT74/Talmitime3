@@ -1,0 +1,406 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Talmitime</title>
+
+
+    <link href="css/w3.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css" />
+
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
+
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+</head>
+<body align="center">
+
+    <div id="mySidenav" class="sidenav">
+        <span href="javascript:void(0)" class="w3-bar-item w3-button w3-right" onclick="closeNav()">X</span>
+        <br />
+        <a href="javascript:%20logout()">התנתק</a>
+        <a>
+            <div id="firebasehideme">
+                <center>
+                    <div id="firebaseui-auth-container"></div>
+
+                    <div id="loader"></div>
+                </center>
+            </div>
+        </a>
+
+        <center><a id="User_name"></a></center>
+        <center><img src="" id="User_photo" /></center>
+    </div>
+
+    <h1>
+        <right><a align="right" href="javascript:%20openNav()"><img src="images/menu.png" /></a></right>
+        המשימות שלי
+    </h1>
+
+    <center>
+
+        <div>
+            <form dir="rtl" action="#" id="form" method="post" name="form" style="display:none">
+
+                <h2>
+                    <right><span id="close" onclick="DelOrhide()" class="w3-bar-item w3-button w3-right">x</span></right>
+                    הוסף משימה
+                </h2>
+                <br />
+                <h5>כותרת המשימה:</h5>
+                <input id="assignment" name="assignment" placeholder="כותרת המשימה" type="text" required>
+
+                <h5>תאריך הגשה:</h5>
+                <input id="date" type="datetime-local" value="2018-06-20T13:00" name="date" placeholder="תאריך להגשה" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}" required />
+                <br />
+                <h5>תיאור המשימה:</h5>
+                <input id="description" name="description" placeholder="תיאור המשימה" type="text" required>
+
+                <h3>הזכר לי: </h3>
+
+                <label class="container" for="noti_daybefore">
+                    יום לפני
+                    <input id="noti_daybefore" name="noti_daybefore" type="checkbox">
+                    <span class="checkmark"></span>
+                </label>
+
+                <label class="container" for="noti_2daysbefore">
+                    יומיים לפני
+                    <input id="noti_2daysbefore" name="noti_2daysbefore" type="checkbox">
+                    <span class="checkmark"></span>
+                </label>
+
+                <label class="container" for="noti_3daysbefore">
+                    שלושה ימים לפני
+                    <input id="noti_3daysbefore" name="noti_3daysbefore" type="checkbox">
+                    <span class="checkmark"></span>
+                </label>
+
+                <label class="container" for="noti_weekbefore">
+                    שבוע לפני
+                    <input id="noti_weekbefore" name="noti_weekbefore" type="checkbox">
+                    <span class="checkmark"></span>
+                </label>
+
+                <label class="container" for="noti_12Hbefore">
+                    12  שעות לפני
+                    <input id="noti_12Hbefore" name="noti_12Hbefore" type="checkbox">
+                    <span class="checkmark"></span>
+                </label>
+
+
+                <br />
+                <a href="javascript:%20check_andUpload()" id="submit">שלח</a>
+            </form>
+            <br />
+        </div>
+
+
+        <div id="addtask">
+            <button id="popup" class="" onclick="DelOrhide()">הוסף משימה</button>
+        </div>
+        <div id="showtasks">
+            <button id="popup2" class="" onclick="refreshData()">הצג משימות</button>
+        </div>
+
+
+    </center>
+    <div id="app-1" class="w3-ul w3-card-4" display="none">
+        <ul id="list" class="w3-ul w3-card-4">
+            <li v-bind:id="'listitem_' + todo.id" v-for="todo in todos" class="w3-bar">
+                <span v-bind:id="'deleteX_' + todo.id" v-bind:onclick="'deleteDoc(\'' + todo.id + '\')'" class="w3-bar-item w3-button w3-right">×</span>
+                <div v-bind:onclick="'GetTasks(\'' + todo.id + '\')'">
+                    <span class="w3-large w3-center">{{ todo.data().assignment }}</span><br><br />
+                    <span class="w3-center">{{RadableDate(todo.data().date)}}</span>
+                </div>
+                <br />
+                <div class="w3-center" v-bind:id="'desc_' + todo.id" style="display:none"><center><span class="w3-large w3-center">{{todo.data().description}}</span></center></div>
+            </li>
+        </ul>
+    </div>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="scripts/platformOverrides.js"></script>
+    <script type="text/javascript" src="scripts/index.js"></script>
+    <script src="scripts/jquery-3.3.1.min.js"></script>
+
+    <script src="scripts/jquery.mobile-1.5.0-alpha.1.min.js"></script>
+
+    <script src="scripts/firebase-app.js"></script>
+    <script src="scripts/firebase-auth.js"></script>
+    <script src="scripts/firebase-firestore.js"></script>
+
+    <!--
+        <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase-database.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase-messaging.js"></script>
+    -->
+
+
+    <script src="scripts/vue.js"></script>
+
+
+
+    <script>
+        function RadableDate(date) //make the date readable
+        {
+            var year = date.substring(0, 4);
+            var month = date.substring(5, 7);
+            var day = date.substring(8, 10);
+            var hours = date.substring(date.indexOf('T') + 1, date.indexOf(':'));
+            var minutes = date.substring(date.indexOf(':') + 1, date.length);
+
+            return (day + "/" + month + "/" + year + " " + hours + ":" + minutes);
+        }
+
+        /* Set the width of the side navigation to 250px */
+        function openNav() {
+            document.getElementById("mySidenav").style.width = "250px";
+        }
+
+        /* Set the width of the side navigation to 0 */
+        function closeNav() {
+            document.getElementById("mySidenav").style.width = "0";
+        }
+
+        function GetTasks(id) {
+            $('#desc_' + id).slideToggle("fast");
+        }
+
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBXsM3e4fmum8iD3eWTIMT7-LZkAXb5N3w",
+            authDomain: "talmitime-app.firebaseapp.com",
+            databaseURL: "https://talmitime-app.firebaseio.com",
+            projectId: "talmitime-app",
+            storageBucket: "talmitime-app.appspot.com",
+            messagingSenderId: "905541320155",
+            clientID: "905541320155-f7mt0el7e53c4b8kscmg7nr4s2d6mkdb.apps.googleusercontent.com",
+            scopes: [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            discoveryDocs: [
+                "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"
+            ]
+        };
+        firebase.initializeApp(config);
+        var db = firebase.firestore();
+
+    </script>
+    <script src="scripts/firebaseui.js"></script>
+
+    <script>
+
+        //initialize firebase ui for login
+        var ui = new firebaseui.auth.AuthUI(firebase.auth());
+
+        ui.start('#firebaseui-auth-container', {
+            // signInSuccessUrl: 'https://talmitime-app.firebaseapp.com',
+
+            callbacks: {
+                signInSuccess: function (currentUser, credential, redirectUrl) {
+                    return false;
+                }
+            },
+
+            signInOptions: [
+                {
+                    provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+                    scopes: [
+                        'https://www.googleapis.com/auth/calendar'
+                    ]
+                }
+            ]
+        });
+
+        //initialize google api element
+        function handleClientLoad() {
+  
+            gapi.load('client:auth2', initClient);
+        }
+
+
+        function initClient() {
+            firebase.auth().onAuthStateChanged(function (user) {
+                gapi.client.init({
+                    apiKey: config.apiKey,
+                    clientId: config.clientID,
+                    discoveryDocs: config.discoveryDocs,
+                    scope: config.scopes.join(" ")
+
+                }).then(function () {
+                    // Make sure the Google API Client is properly signed in
+                    if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
+                        console.log("signed in");
+                    } else {
+                        firebase.auth().signOut(); // Something went wrong, sign out
+                    }
+                });
+            })
+        }
+
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+                console.log(user);
+                refreshData();
+                $('#User_name').html(firebase.auth().currentUser.displayName);
+                $('#User_photo').attr("src", firebase.auth().currentUser.photoURL);
+            } else {
+                // No user is signed in.
+            }
+        });
+
+        function logout() {
+            firebase.auth().signOut().then(function () {
+
+                while (app.todos.length > 0) {
+                    app.todos.pop();
+                }
+
+                location.reload(true);
+
+            }).catch(function (error) {
+                console.log(error);
+            });
+        }
+
+
+        function deleteDoc(id) //delete firebase doc
+        {
+            db.collection("users").doc(firebase.auth().currentUser.uid).collection("Tasks").doc(id).delete().then(function () {
+                console.log("Document successfully deleted!");
+            }).catch(function (error) {
+                console.error("Error removing document: ", error);
+            });
+            $('#listitem_' + id).hide();
+        }
+
+        function check_andUpload() {
+
+            if ($('#assignment').val() == "" || $('#date').val() == "" || $('#description').val() == "") {
+                alert("מלא את כל השדות");
+            }
+            else {
+
+                db.collection("users").doc(firebase.auth().currentUser.uid).collection("Tasks").add({
+                    assignment: $('#assignment').val(),
+                    date: $('#date').val(),
+                    description: $('#description').val(),
+                })
+                    .then(function (docRef) {
+                        console.log("Document written with ID: ", docRef.id);
+                        refreshData();
+
+
+                        createEvent($('#assignment').val(), $('#date').val(), $('#description').val());
+
+                        $('#form').find('input:text').val(''); //clear form fields
+                        $('input:checkbox').removeAttr('checked');
+                        $("input[type=datetime-local]").val('2018-06-20T13:00');
+
+                    })
+                    .catch(function (error) {
+                        console.error("Error adding document: ", error);
+                    });
+
+                $('#form').slideToggle("fast");
+                $('#addtask').slideToggle("fast");
+            }
+        }
+
+        function createEvent(assignment, date, description) {
+            var title = "Talmitime - ניהול משימות";
+            var event = {
+                'summary': assignment,
+                'description': description,
+                'start': {
+                    'dateTime': date + ":00",
+                    'timeZone': 'Asia/Jerusalem'
+                },
+                'end': {
+                    'dateTime': date + ":00",
+                    'timeZone': 'Asia/Jerusalem'
+                },
+                'reminders': {
+                    'useDefault': '',
+                    'overrides': [
+                    ]
+                },
+            };
+
+            var remindersarr = [];
+
+            if ($('#noti_daybefore').is(':checked'))
+                remindersarr.push({ 'method': 'popup', 'minutes': 24 * 60 });
+            if ($('#noti_2daysbefore').is(':checked'))
+                remindersarr.push({ 'method': 'popup', 'minutes': 48 * 60 });
+            if ($('#noti_3daysbefore').is(':checked'))
+                remindersarr.push({ 'method': 'popup', 'minutes': 72 * 60 });
+            if ($('#noti_weekbefore').is(':checked'))
+                remindersarr.push({ 'method': 'popup', 'minutes': 7 * 24 * 60 });
+            if ($('#noti_12Hbefore').is(':checked'))
+                remindersarr.push({ 'method': 'popup', 'minutes': 12 * 60 });
+
+            if (remindersarr != null) {
+                event.reminders.useDefault = "false";
+                event.reminders.overrides = remindersarr;
+            }
+            else {
+                event.reminders.useDefault = "true";
+            }
+
+            var request = gapi.client.calendar.events.insert({
+                'calendarId': 'primary',
+                'resource': event
+            });
+
+            request.execute(function (event) {
+                console.log('Event created: ' + event.htmlLink);
+            });
+
+        }
+
+        var app = new Vue({
+            el: '#app-1',
+            data: {
+                todos: [
+
+                ]
+            }
+
+        })
+
+        function refreshData() {
+            console.log("im in refresh data");
+            while (app.todos.length > 0) {
+                app.todos.pop();
+            }
+
+            if (firebase.auth().currentUser != null) {
+                db.collection("users").doc(firebase.auth().currentUser.uid).collection("Tasks").orderBy("date").get().then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        app.todos.push(doc);
+                    });
+                });
+            }
+        }
+
+
+        function DelOrhide() {
+            $('#form').slideToggle("fast");
+            $('#addtask').slideToggle("fast");
+        }
+
+
+
+    </script>
+
+    <script async defer src="scripts/api.js"
+            onload="this.onload=function(){};handleClientLoad()"
+            onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
+
+</body>
+</html>

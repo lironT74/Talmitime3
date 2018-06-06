@@ -1,0 +1,11 @@
+{
+  "android": {
+    "release": {
+      "keystore": "c:\\TT.keystore",
+      "storePassword": "pwd154",
+      "alias": "LironT",
+      "password": "pwd154",
+      "keystoreType": ""
+    }
+  }
+}
